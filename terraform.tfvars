@@ -1,0 +1,7 @@
+aws_access_key_id     = ""
+aws_secret_access_key = ""
+aws_region            = ""
+ami_id          = ""
+instance_type   = ""
+key_name        = ""
+ec2_name        = ""
