@@ -1,42 +1,31 @@
-variable "aws_access_key_id" {
-  description = "AWS Access Key ID"
-  type        = string
-  sensitive   = true
-}
-
-variable "aws_secret_access_key" {
-  description = "AWS Secret Access Key"
-  type        = string
-  sensitive   = true
-}
-
 variable "aws_region" {
-  description = "AWS Region"
+  description = "Región AWS"
   type        = string
   default     = "us-east-1"
 }
 
-variable "bucket_name" {
-  description = "Nombre único para el bucket S3"
+variable "ami_id" {
+  description = "AMI para EC2"
   type        = string
 }
 
-variable "ami_id" {
-  type =  string
-  description = "AMI para EC2"
-}
-
 variable "instance_type" {
-  type = string
   description = "Tipo de instancia EC2"
+  type        = string
+  default     = "t2.micro"
 }
 
 variable "key_name" {
-  type = string
   description = "Nombre del par de claves EC2"
+  type        = string
 }
 
 variable "ec2_name" {
-  type = string
   description = "Nombre de la instancia EC2"
+  type        = string
+}
+
+variable "output_bucket_name" {
+  description = "Nombre del bucket donde están los reportes"
+  type        = string
 }
