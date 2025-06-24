@@ -1,24 +1,31 @@
 variable "aws_region" {
-  default = "us-east-1"
+  description = "Región de AWS donde se desplegarán los recursos"
+  type        = string
+  default     = "us-east-1"
 }
 
 variable "ami_id" {
-  description = "AMI Ubuntu 22.04 LTS"
-  default     = "ami-080e1f13689e07408"  # Ubuntu Server 22.04 LTS (HVM), SSD Volume Type - us-east-1
+  description = "ID de la AMI para la instancia EC2"
+  type        = string
 }
 
 variable "instance_type" {
-  default = "t2.micro"
+  description = "Tipo de instancia EC2 (por ejemplo, t2.micro)"
+  type        = string
+  default     = "t2.micro"
 }
 
 variable "key_name" {
-  description = "Nombre de tu par de claves SSH"
+  description = "Nombre de la clave SSH para acceder a la instancia EC2"
+  type        = string
 }
 
 variable "output_bucket_name" {
-  default = "proyecto-reportes-procesados"
+  description = "Nombre del bucket donde se suben los reportes procesados"
+  type        = string
 }
 
 variable "ec2_name" {
-  default = "flask-ec2"
+  description = "Nombre del recurso EC2 (tag Name)"
+  type        = string
 }

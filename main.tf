@@ -2,16 +2,14 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Obtener la VPC por defecto
 data "aws_vpc" "default" {
   default = true
 }
 
 data "aws_availability_zones" "available" {}
 
-# Security Group (Flask, SSH)
 resource "aws_security_group" "ec2_sg" {
-  name        = "sg-flask-reportes"
+  name        = "flask-reportes-sg"
   description = "Permitir acceso HTTP (5000) y SSH (22)"
   vpc_id      = data.aws_vpc.default.id
 
@@ -39,11 +37,10 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "sg-flask-reportes"
+    Name = "flask-reportes-sg"
   }
 }
 
-# Subnet pública
 resource "aws_subnet" "subnet1" {
   vpc_id                  = data.aws_vpc.default.id
   cidr_block              = "10.0.1.0/24"
@@ -51,7 +48,6 @@ resource "aws_subnet" "subnet1" {
   map_public_ip_on_launch = true
 }
 
-# Rol IAM para EC2
 resource "aws_iam_role" "ec2_dynamodb_role" {
   name = "ec2_dynamodb_role"
 
@@ -67,7 +63,6 @@ resource "aws_iam_role" "ec2_dynamodb_role" {
   })
 }
 
-# Política: DynamoDB + S3 (lectura)
 resource "aws_iam_policy" "ec2_dynamodb_s3_read_policy" {
   name = "ec2_dynamodb_s3_read_policy"
 
@@ -101,7 +96,6 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   role = aws_iam_role.ec2_dynamodb_role.name
 }
 
-# Instancia EC2
 resource "aws_instance" "app_ec2" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
