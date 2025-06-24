@@ -41,12 +41,24 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
-resource "aws_subnet" "subnet1" {
-  vpc_id                  = data.aws_vpc.default.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = data.aws_availability_zones.available.names[0]
-  map_public_ip_on_launch = true
+resource "aws_instance" "app_ec2" {
+  ami                         = var.ami_id
+  instance_type               = var.instance_type
+  key_name                    = var.key_name
+  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
+  subnet_id                   = "subnet-0b31b0b57cbc5c1cf"  # ✅ subred aws
+  associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
+
+  user_data = templatefile("${path.module}/user_data.sh", {
+    bucket_name = var.output_bucket_name
+  })
+
+  tags = {
+    Name = var.ec2_name
+  }
 }
+
 
 resource "aws_iam_role" "ec2_dynamodb_role" {
   name = "ec2_dynamodb_role"
@@ -94,22 +106,4 @@ resource "aws_iam_role_policy_attachment" "ec2_role_attach" {
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2_profile"
   role = aws_iam_role.ec2_dynamodb_role.name
-}
-
-resource "aws_instance" "app_ec2" {
-  ami                         = var.ami_id
-  instance_type               = var.instance_type
-  key_name                    = var.key_name
-  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  subnet_id                   = aws_subnet.subnet1.id
-  associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
-
-  user_data = templatefile("${path.module}/user_data.sh", {
-    bucket_name = var.output_bucket_name
-  })
-
-  tags = {
-    Name = var.ec2_name
-  }
 }
