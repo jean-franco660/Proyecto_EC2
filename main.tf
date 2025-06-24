@@ -6,10 +6,8 @@ data "aws_vpc" "default" {
   default = true
 }
 
-data "aws_availability_zones" "available" {}
-
 resource "aws_security_group" "ec2_sg" {
-  name        = "flask-reportes-sg"
+  name        = "ec2-flask-sg"
   description = "Permitir acceso HTTP (5000) y SSH (22)"
   vpc_id      = data.aws_vpc.default.id
 
@@ -37,31 +35,12 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "flask-reportes-sg"
+    Name = "ec2-flask-sg"
   }
 }
 
-resource "aws_instance" "app_ec2" {
-  ami                         = var.ami_id
-  instance_type               = var.instance_type
-  key_name                    = var.key_name
-  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  subnet_id                   = "subnet-0b31b0b57cbc5c1cf" 
-  associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
-
-  user_data = templatefile("${path.module}/user_data.sh", {
-    bucket_name = var.output_bucket_name
-  })
-
-  tags = {
-    Name = var.ec2_name
-  }
-}
-
-
-resource "aws_iam_role" "ec2_dynamodb_role" {
-  name = "ec2_dynamodb_role"
+resource "aws_iam_role" "ec2_app_role" {
+  name = "ec2_app_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -75,8 +54,8 @@ resource "aws_iam_role" "ec2_dynamodb_role" {
   })
 }
 
-resource "aws_iam_policy" "ec2_dynamodb_s3_read_policy" {
-  name = "ec2_dynamodb_s3_read_policy"
+resource "aws_iam_policy" "ec2_app_policy" {
+  name = "ec2_app_policy"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -99,11 +78,29 @@ resource "aws_iam_policy" "ec2_dynamodb_s3_read_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_role_attach" {
-  role       = aws_iam_role.ec2_dynamodb_role.name
-  policy_arn = aws_iam_policy.ec2_dynamodb_s3_read_policy.arn
+  role       = aws_iam_role.ec2_app_role.name
+  policy_arn = aws_iam_policy.ec2_app_policy.arn
 }
 
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "ec2_profile"
-  role = aws_iam_role.ec2_dynamodb_role.name
+resource "aws_iam_instance_profile" "ec2_app_profile" {
+  name = "ec2_app_profile"
+  role = aws_iam_role.ec2_app_role.name
+}
+
+resource "aws_instance" "app_ec2" {
+  ami                         = var.ami_id
+  instance_type               = var.instance_type
+  key_name                    = var.key_name
+  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
+  subnet_id                   = "subnet-0b31b0b57cbc5c1cf"
+  associate_public_ip_address = true
+  iam_instance_profile        = aws_iam_instance_profile.ec2_app_profile.name
+
+  user_data = templatefile("${path.module}/user_data.sh", {
+    bucket_name = var.output_bucket_name
+  })
+
+  tags = {
+    Name = var.ec2_name
+  }
 }
