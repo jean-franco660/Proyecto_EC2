@@ -7,7 +7,7 @@ data "aws_vpc" "default" {
 }
 
 resource "aws_security_group" "ec2_sg" {
-  name        = "ec2-flask-sg_${var.env}"
+  name        = "ec2-flask-app"
   
   lifecycle {
     create_before_destroy = true
@@ -41,7 +41,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "ec2-flask-sg_${var.env}"
+    Name = "ec2-flask-app"
   }
 }
 
@@ -61,7 +61,7 @@ resource "aws_iam_role" "ec2_app_role" {
 }
 
 resource "aws_iam_policy" "ec2_app_policy" {
-  name = "ec2_app_policy_${var.env}"
+  name = "ec2_app_policy"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -90,7 +90,7 @@ resource "aws_iam_role_policy_attachment" "ec2_role_attach" {
 }
 
 resource "aws_iam_instance_profile" "ec2_app_profile" {
-  name = "ec2_app_profile_${var.env}"
+  name = "ec2_app_profile"
   role = aws_iam_role.ec2_app_role.name
 }
 

@@ -36,12 +36,6 @@ variable "ec2_name" {
   type        = string
 }
 
-variable "env" {
-  description = "Entorno de despliegue"
-  type        = string
-  default     = "dev"
-}
-
 variable "dynamodb_table_name" {
   description = "Nombre de la tabla DynamoDB"
   type        = string
