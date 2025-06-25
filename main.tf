@@ -6,7 +6,6 @@ data "aws_vpc" "default" {
   default = true
 }
 
-# 🔐 Seguridad
 resource "aws_security_group" "ec2_sg" {
   name        = "ec2-flask-app"
   description = "Permitir acceso HTTP (5000) y SSH (22)"
@@ -36,20 +35,21 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "ec2-flask-app"
+    Name = var.ec2_name
   }
 }
 
-# 🔐 IAM para EC2
 resource "aws_iam_role" "ec2_app_role" {
-  name = "ec2_app_flask"
+  name = "ec2_app_role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect    = "Allow",
-      Principal = { Service = "ec2.amazonaws.com" },
-      Action    = "sts:AssumeRole"
+      Effect = "Allow",
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      },
+      Action = "sts:AssumeRole"
     }]
   })
 }
@@ -62,11 +62,6 @@ resource "aws_iam_policy" "ec2_app_policy" {
     Statement = [
       {
         Effect = "Allow",
-        Action = ["dynamodb:Scan", "dynamodb:GetItem"],
-        Resource = aws_dynamodb_table.reportes.arn
-      },
-      {
-        Effect = "Allow",
         Action = ["s3:GetObject", "s3:ListBucket"],
         Resource = [
           "arn:aws:s3:::${var.output_bucket_name}",
@@ -75,8 +70,6 @@ resource "aws_iam_policy" "ec2_app_policy" {
       }
     ]
   })
-
-  depends_on = [aws_dynamodb_table.reportes]
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_role_attach" {
@@ -89,14 +82,13 @@ resource "aws_iam_instance_profile" "ec2_app_profile" {
   role = aws_iam_role.ec2_app_role.name
 }
 
-# 🖥️ Instancia EC2
 resource "aws_instance" "app_ec2" {
   ami                         = var.ami_id
-  instance_type               = var.instance_type
+  instance_type               = "t2.micro"
   key_name                    = var.key_name
-  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
+  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_app_profile.name
 
   user_data = templatefile("${path.module}/user_data.sh", {
@@ -105,21 +97,5 @@ resource "aws_instance" "app_ec2" {
 
   tags = {
     Name = var.ec2_name
-  }
-}
-
-# 🧾 Tabla DynamoDB
-resource "aws_dynamodb_table" "reportes" {
-  name         = "reportes_table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
-
-  attribute {
-    name = "id"
-    type = "S"
-  }
-
-  tags = {
-    Name        = "reportes_table"
   }
 }
