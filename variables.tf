@@ -29,3 +29,9 @@ variable "ec2_name" {
   description = "Nombre del recurso EC2 (tag Name)"
   type        = string
 }
+
+variable "env" {
+  description = "Nombre del entorno (por ejemplo: dev, prod, test)"
+  type        = string
+  default     = "dev" 
+}
