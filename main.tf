@@ -83,9 +83,10 @@ resource "aws_iam_role_policy_attachment" "ec2_role_attach" {
 }
 
 resource "aws_iam_instance_profile" "ec2_app_profile" {
-  name = "ec2_app_profile"
-  role = aws_iam_role.ec2_app_role.name
+  name = "ec2_app_profile_${var.env}"
+  role = aws_iam_role.ec2_dynamodb_role.name
 }
+
 
 resource "aws_instance" "app_ec2" {
   ami                         = var.ami_id
