@@ -20,6 +20,12 @@ variable "key_name" {
   type        = string
 }
 
+variable "input_bucket_name" {
+  description = "Nombre del bucket donde se suben los archivos CSV de entrada"
+  type        = string
+}
+
+
 variable "output_bucket_name" {
   description = "Nombre del bucket donde se suben los reportes procesados"
   type        = string
@@ -31,7 +37,13 @@ variable "ec2_name" {
 }
 
 variable "env" {
-  description = "Nombre del entorno (por ejemplo: dev, prod, test)"
+  description = "Entorno de despliegue"
   type        = string
-  default     = "dev" 
+  default     = "dev"
+}
+
+variable "dynamodb_table_name" {
+  description = "Nombre de la tabla DynamoDB"
+  type        = string
+  default     = "reportes_table"
 }

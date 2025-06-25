@@ -35,7 +35,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "ec2-flask-sg"
+    Name = "ec2-flask-sg_${var.env}"
   }
 }
 
@@ -63,7 +63,7 @@ resource "aws_iam_policy" "ec2_app_policy" {
       {
         Effect = "Allow",
         Action = ["dynamodb:Scan", "dynamodb:GetItem"],
-        Resource = "arn:aws:dynamodb:*:*:table/reportes_table"
+        Resource = aws_dynamodb_table.reportes.arn
       },
       {
         Effect = "Allow",
@@ -75,6 +75,7 @@ resource "aws_iam_policy" "ec2_app_policy" {
       }
     ]
   })
+  depends_on = [aws_dynamodb_table.reportes]
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_role_attach" {
@@ -84,7 +85,7 @@ resource "aws_iam_role_policy_attachment" "ec2_role_attach" {
 
 resource "aws_iam_instance_profile" "ec2_app_profile" {
   name = "ec2_app_profile_${var.env}"
-  role = aws_iam_role.ec2_dynamodb_role.name
+  role = aws_iam_role.ec2_app_role.name
 }
 
 
@@ -103,5 +104,23 @@ resource "aws_instance" "app_ec2" {
 
   tags = {
     Name = var.ec2_name
+  }
+}
+
+
+# --- DynamoDB Table para los reportes ---
+resource "aws_dynamodb_table" "reportes" {
+  name         = "reportes_table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "reportes_table"
+    Environment = var.env
   }
 }
