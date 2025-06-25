@@ -8,6 +8,12 @@ data "aws_vpc" "default" {
 
 resource "aws_security_group" "ec2_sg" {
   name        = "ec2-flask-sg_${var.env}"
+  
+  lifecycle {
+    create_before_destroy = true
+    ignore_changes        = []
+  }
+  
   description = "Permitir acceso HTTP (5000) y SSH (22)"
   vpc_id      = data.aws_vpc.default.id
 
