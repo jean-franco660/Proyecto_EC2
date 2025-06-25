@@ -6,14 +6,9 @@ data "aws_vpc" "default" {
   default = true
 }
 
+# 🔐 Seguridad
 resource "aws_security_group" "ec2_sg" {
   name        = "ec2-flask-app"
-  
-  lifecycle {
-    create_before_destroy = true
-    ignore_changes        = []
-  }
-  
   description = "Permitir acceso HTTP (5000) y SSH (22)"
   vpc_id      = data.aws_vpc.default.id
 
@@ -45,16 +40,15 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
+# 🔐 IAM para EC2
 resource "aws_iam_role" "ec2_app_role" {
-  name = "ec2_app_role_${var.env}"
+  name = "ec2_app_flask"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
       Effect    = "Allow",
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      },
+      Principal = { Service = "ec2.amazonaws.com" },
       Action    = "sts:AssumeRole"
     }]
   })
@@ -81,6 +75,7 @@ resource "aws_iam_policy" "ec2_app_policy" {
       }
     ]
   })
+
   depends_on = [aws_dynamodb_table.reportes]
 }
 
@@ -94,13 +89,13 @@ resource "aws_iam_instance_profile" "ec2_app_profile" {
   role = aws_iam_role.ec2_app_role.name
 }
 
-
+# 🖥️ Instancia EC2
 resource "aws_instance" "app_ec2" {
   ami                         = var.ami_id
   instance_type               = var.instance_type
   key_name                    = var.key_name
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  subnet_id                   = "subnet-0b31b0b57cbc5c1cf"
+  subnet_id                   = var.subnet_id
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.ec2_app_profile.name
 
@@ -113,8 +108,7 @@ resource "aws_instance" "app_ec2" {
   }
 }
 
-
-# --- DynamoDB Table para los reportes ---
+# 🧾 Tabla DynamoDB
 resource "aws_dynamodb_table" "reportes" {
   name         = "reportes_table"
   billing_mode = "PAY_PER_REQUEST"
@@ -127,6 +121,5 @@ resource "aws_dynamodb_table" "reportes" {
 
   tags = {
     Name        = "reportes_table"
-    Environment = var.env
   }
 }

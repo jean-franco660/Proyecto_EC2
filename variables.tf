@@ -1,43 +1,35 @@
 variable "aws_region" {
-  description = "Región de AWS donde se desplegarán los recursos"
+  description = "Región donde se desplegará EC2"
   type        = string
-  default     = "us-east-1"
 }
 
 variable "ami_id" {
-  description = "ID de la AMI para la instancia EC2"
+  description = "ID de la AMI para EC2"
   type        = string
 }
 
 variable "instance_type" {
-  description = "Tipo de instancia EC2 (por ejemplo, t2.micro)"
+  description = "Tipo de instancia EC2"
   type        = string
   default     = "t2.micro"
 }
 
 variable "key_name" {
-  description = "Nombre de la clave SSH para acceder a la instancia EC2"
+  description = "Nombre de la clave SSH"
   type        = string
 }
 
-variable "input_bucket_name" {
-  description = "Nombre del bucket donde se suben los archivos CSV de entrada"
+variable "subnet_id" {
+  description = "ID de la subred donde se lanzará EC2"
   type        = string
 }
-
 
 variable "output_bucket_name" {
-  description = "Nombre del bucket donde se suben los reportes procesados"
+  description = "Nombre del bucket de salida (donde EC2 leerá reportes)"
   type        = string
 }
 
 variable "ec2_name" {
-  description = "Nombre del recurso EC2 (tag Name)"
+  description = "Nombre de la instancia EC2"
   type        = string
-}
-
-variable "dynamodb_table_name" {
-  description = "Nombre de la tabla DynamoDB"
-  type        = string
-  default     = "reportes_table"
 }
