@@ -19,7 +19,7 @@ variable "key_name" {
 }
 
 variable "subnet_id" {
-  description = "ID de la subred"
+  description = "ID de la subred donde se creará la instancia EC2"
   type        = string
 }
 
