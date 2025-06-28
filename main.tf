@@ -7,7 +7,7 @@ data "aws_vpc" "default" {
 }
 
 resource "aws_security_group" "ec2_sg" {
-  name        = "ec2-app"
+  name        = "ec2-app_csv"
   description = "Permitir acceso HTTP (5000) y SSH (22)"
   vpc_id      = data.aws_vpc.default.id
 
@@ -40,7 +40,7 @@ resource "aws_security_group" "ec2_sg" {
 }
 
 resource "aws_iam_role" "ec2_app_role" {
-  name = "ec2_role"
+  name = "ec2_role_csv"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -55,7 +55,7 @@ resource "aws_iam_role" "ec2_app_role" {
 }
 
 resource "aws_iam_policy" "ec2_app_policy" {
-  name = "ec2_policy"
+  name = "ec2_policy_csv"
 
   policy = jsonencode({
     Version = "2012-10-17",
