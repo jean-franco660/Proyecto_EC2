@@ -46,7 +46,7 @@ resource "aws_iam_role" "ec2_app_role" {
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{
+    Statement = [ {
       Effect = "Allow",
       Principal = {
         Service = "ec2.amazonaws.com"
@@ -56,16 +56,15 @@ resource "aws_iam_role" "ec2_app_role" {
   })
 }
 
-# ✅ Adjuntar política EXISTENTE
-resource "aws_iam_role_policy_attachment" "adjuntar_politica_existente" {
+# 🔗 Asociar política externa al rol
+resource "aws_iam_role_policy_attachment" "attach_external_policy" {
   role       = aws_iam_role.ec2_app_role.name
   policy_arn = "arn:aws:iam::740857578543:policy/politicasglobales"
 }
 
-# 🧾 Crear el Instance Profile automáticamente
-resource "aws_iam_instance_profile" "ec2_instance_profile" {
+# ✅ Usar Instance Profile existente (evita error de duplicado)
+data "aws_iam_instance_profile" "existing_profile" {
   name = "ec2_flask_profile"
-  role = aws_iam_role.ec2_app_role.name
 }
 
 # 💻 Instancia EC2
@@ -76,7 +75,7 @@ resource "aws_instance" "app_ec2" {
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.name
+  iam_instance_profile        = data.aws_iam_instance_profile.existing_profile.name
 
   user_data = templatefile("${path.module}/user_data.sh", {
     bucket_name = var.output_bucket_name
