@@ -56,29 +56,10 @@ resource "aws_iam_role" "ec2_app_role" {
   })
 }
 
-# 📜 Política de acceso a S3 (solo lectura del bucket de salida)
-resource "aws_iam_policy" "ec2_app_policy" {
-  name = "ec2_policy_csv"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = ["s3:GetObject", "s3:ListBucket"],
-        Resource = [
-          "arn:aws:s3:::${var.output_bucket_name}",
-          "arn:aws:s3:::${var.output_bucket_name}/*"
-        ]
-      }
-    ]
-  })
-}
-
-# 🔗 Asociar política al rol
-resource "aws_iam_role_policy_attachment" "ec2_role_attach" {
+# ✅ Adjuntar política EXISTENTE
+resource "aws_iam_role_policy_attachment" "adjuntar_politica_existente" {
   role       = aws_iam_role.ec2_app_role.name
-  policy_arn = aws_iam_policy.ec2_app_policy.arn
+  policy_arn = "arn:aws:iam::740857578543:policy/politicasglobales"
 }
 
 # 🧾 Crear el Instance Profile automáticamente
@@ -87,7 +68,7 @@ resource "aws_iam_instance_profile" "ec2_instance_profile" {
   role = aws_iam_role.ec2_app_role.name
 }
 
-# 💻 Instancia EC2 con user_data que descarga y ejecuta Flask
+# 💻 Instancia EC2
 resource "aws_instance" "app_ec2" {
   ami                         = var.ami_id
   instance_type               = "t2.micro"
