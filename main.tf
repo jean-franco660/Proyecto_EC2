@@ -6,7 +6,6 @@ data "aws_vpc" "default" {
   default = true
 }
 
-# 🔒 Security Group para la app Flask
 resource "aws_security_group" "ec2_sg" {
   name        = "ec2-app_csv"
   description = "Permitir acceso HTTP (5000) y SSH (22)"
@@ -40,13 +39,12 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
-# 👤 Rol de ejecución EC2
 resource "aws_iam_role" "ec2_app_role" {
   name = "ec2_role_csv"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [ {
+    Statement = [{
       Effect = "Allow",
       Principal = {
         Service = "ec2.amazonaws.com"
@@ -56,18 +54,17 @@ resource "aws_iam_role" "ec2_app_role" {
   })
 }
 
-# 🔗 Asociar política externa al rol
 resource "aws_iam_role_policy_attachment" "attach_external_policy" {
   role       = aws_iam_role.ec2_app_role.name
   policy_arn = "arn:aws:iam::740857578543:policy/politicasglobales"
 }
 
-# ✅ Usar Instance Profile existente (evita error de duplicado)
-data "aws_iam_instance_profile" "existing_profile" {
+# ✅ Aquí está el cambio correcto
+resource "aws_iam_instance_profile" "ec2_instance_profile" {
   name = "ec2_flask_profile"
+  role = aws_iam_role.ec2_app_role.name
 }
 
-# 💻 Instancia EC2
 resource "aws_instance" "app_ec2" {
   ami                         = var.ami_id
   instance_type               = "t2.micro"
@@ -75,7 +72,7 @@ resource "aws_instance" "app_ec2" {
   subnet_id                   = var.subnet_id
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  iam_instance_profile        = data.aws_iam_instance_profile.existing_profile.name
+  iam_instance_profile        = aws_iam_instance_profile.ec2_instance_profile.name
 
   user_data = templatefile("${path.module}/user_data.sh", {
     bucket_name = var.output_bucket_name
